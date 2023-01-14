@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  slack: circleci/slack@4.12.0
+
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -46,6 +49,10 @@ jobs:
             cd frontend
             npm install
             npm run build
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -63,6 +70,10 @@ jobs:
             cd backend
             npm install
             npm run build
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -80,6 +91,10 @@ jobs:
             cd frontend
             npm install
             npm run test
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
                 
   test-backend:
     docker:
@@ -94,6 +109,10 @@ jobs:
             cd backend
             npm install
             npm run test
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
             
   scan-frontend:
     docker:
@@ -108,6 +127,10 @@ jobs:
             cd frontend
             npm install
             npm audit fix --audit-level=critical
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
 
   scan-backend:
     docker:
@@ -122,6 +145,10 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical
+      - slack/notify:
+          channel: C04CPS646NP
+          event: fail
+          template: basic_fail_1
 
 #   deploy-infrastructure:
 #     docker:
@@ -292,16 +319,22 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
+      - build-frontend:
+          context: CircleCI_Context
+      - build-backend:
+          context: CircleCI_Context
       - test-frontend:
           requires: [build-frontend]
+          context: CircleCI_Context
       - test-backend:
           requires: [build-backend]
+          context: CircleCI_Context
       - scan-backend:
           requires: [build-backend]
+          context: CircleCI_Context
       - scan-frontend:
           requires: [build-frontend]
+          context: CircleCI_Context
 #       - deploy-infrastructure:
 #           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
 #           filters:
