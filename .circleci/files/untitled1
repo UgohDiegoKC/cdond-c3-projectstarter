@@ -1,5 +1,0 @@
-cd .circleci/files
-aws cloudformation deploy \
-        --template-file cloudfront.yml \
-        --stack-name initialStack \
-        --parameter-overrides WorkflowID=udapeople-diego
