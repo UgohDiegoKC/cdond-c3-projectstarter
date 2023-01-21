@@ -16,7 +16,7 @@ orbs:
           when: on_fail
           command: |
             # Empty Frontend bucket
-            aws s3 rm s3://udapeople-diego-<<parameters.Workflow_id>> --recursive
+            aws s3 rm s3://udapeople-<<parameters.Workflow_id>> --recursive
 
             # Delete Frontend stack
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.Workflow_id>>
