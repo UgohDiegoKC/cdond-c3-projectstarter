@@ -193,13 +193,13 @@ jobs:
             aws ec2 describe-instances \
             --query "Reservations[*].Instances[*].[PublicIpAddress]" \
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text >> ~/project/.circleci/ansible/inventory.txt
-            cat ~/project/.circleci/ansible/inventory.txt
+            --output text >> ~/cdond-c3-projectstarter/.circleci/ansible/inventory.txt
+            cat ~/cdond-c3-projectstarter/.circleci/ansible/inventory.txt
           # exit 1
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - cdond-c3-projectstarter/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
       - Destroy environments:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
