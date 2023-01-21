@@ -4,17 +4,17 @@ orbs:
   slack: circleci/slack@4.12.0
 
 # commands:
-  destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      # Add parameter here   
-    steps:
-      - run:
-          name: Destroy environments
-          when: on_fail
-          command: |
-            # Your code here
-          # exit 1
+  # destroy-environment:
+  #   description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+  #   parameters:
+  #     # Add parameter here   
+  #   steps:
+  #     - run:
+  #         name: Destroy environments
+  #         when: on_fail
+  #         command: |
+  #           # Your code here
+  #         # exit 1
 
 #   revert-migrations:
 #     description: Revert the last migration if successfully run in the current workflow.
@@ -192,7 +192,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
-      - destroy-environment:
+      - Destroy environments:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   # configure-infrastructure:
@@ -224,7 +224,7 @@ jobs:
   #         no_output_timeout: 30m
   #           # exit 1
   #     # Here's where you will add some code to rollback on failure      
-  #     - destroy-environment:
+  #     - Destroy environments:
   #         workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 #   run-migrations:
