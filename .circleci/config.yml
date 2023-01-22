@@ -4,20 +4,10 @@ orbs:
   slack: circleci/slack@4.12.0
 
 # commands:
-  install_awscli:
-    description: Install AWS CLI v2
-    steps:
-      - run:
-          name: Install AWS CLI v2
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-      Workflow_ID:
+      workflow_id:
         type: string
         default: ${CIRCLE_WORKFLOW_ID:0:7}
     steps:
@@ -25,14 +15,14 @@ orbs:
           name: Destroy environments
           when: on_fail
           command: |
-            # Empty frontend bucket
-            aws s3 rm s3://udapeople-<<parameters.Workflow_ID>> --recursive
+            # Empty Frontend bucket
+            aws s3 rm s3://udapeople-<<parameters.Workflow_id>> --recursive
 
-            # Delete frontend stack
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.Workflow_ID >>
+            # Delete Frontend stack
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.Workflow_id>>
 
-            # Delete backend stack
-            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.Workflow_ID >>
+            # Delete Backend stack
+            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.Workflow_id>>
           # exit 1
 
 #   revert-migrations:
@@ -172,11 +162,11 @@ jobs:
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
-      - image: cimg/python:3.10
+      - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - checkout
-      - install_awscli
+      - run: yum install tar gzip -y
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -218,7 +208,7 @@ jobs:
   # configure-infrastructure:
   #   docker:
   #     # Docker image here that supports Ansible
-  #     - image: cimg/python:3.10
+  #     - image: python:3.10-alpine3.16
   #   steps:
   #     # Checkout code from git
   #     - checkout
