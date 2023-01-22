@@ -3,11 +3,21 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.12.0
 
-# commands:
+commands:
+  install_awscli:
+    description: Install AWS CLI v2
+    steps:
+      - run:
+          name: Install AWS CLI v2
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-      workflow_id:
+      Workflow_ID:
         type: string
         default: ${CIRCLE_WORKFLOW_ID:0:7}
     steps:
@@ -15,14 +25,14 @@ orbs:
           name: Destroy environments
           when: on_fail
           command: |
-            # Empty Frontend bucket
-            aws s3 rm s3://udapeople-<<parameters.Workflow_id>> --recursive
+            # Empty frontend bucket
+            aws s3 rm s3://udapeople-<<parameters.Workflow_ID>> --recursive
 
-            # Delete Frontend stack
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.Workflow_id>>
+            # Delete frontend stack
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.Workflow_ID >>
 
-            # Delete Backend stack
-            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.Workflow_id>>
+            # Delete backend stack
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.Workflow_ID >>
           # exit 1
 
 #   revert-migrations:
@@ -166,7 +176,7 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
-      - run: yum install tar gzip -y
+      - install_awscli
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -202,7 +212,8 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure      
-      - destroy-environment
+      - destroy-environment:
+          Workflow_ID: ${CIRCLE_WORKFLOW_ID:0:7}
 
   # configure-infrastructure:
   #   docker:
@@ -233,8 +244,8 @@ jobs:
   #         no_output_timeout: 30m
   #           # exit 1
   #     # Here's where you will add some code to rollback on failure      
-  #     - Destroy environments:
-  #         workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      # - destroy-environment:
+      #     Workflow_ID: ${CIRCLE_WORKFLOW_ID:0:7}
 
 #   run-migrations:
 #     docker:
