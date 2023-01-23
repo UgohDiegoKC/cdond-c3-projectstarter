@@ -49,7 +49,6 @@ commands:
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS=$(curl --insecure  https://kvdb.io/BULzLEHQkbvWVj6mDjr987/migration_${CIRCLE_WORKFLOW_ID:0:7} )
@@ -57,7 +56,7 @@ commands:
             then
               cd ~/project/backend
               npm install
-              npm run migration:revert
+              npm run migrations:revert
             fi
             
 jobs:
@@ -255,7 +254,7 @@ jobs:
       - checkout
 
       - install_awscli
-      
+
       - run:
           name: Run migrations
           command: |
