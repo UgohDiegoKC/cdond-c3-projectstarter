@@ -295,6 +295,7 @@ jobs:
           command: |
             cd frontend
             npm install
+            npm update
 
       - run:
           name: Get backend url
