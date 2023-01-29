@@ -336,7 +336,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update --no-cache ansible tar gzip nodejsnnpm curl aws-cli
+            apk add --update --no-cache ansible tar gzip nodejs npm curl aws-cli
 
       - run:
           name: Deploy backend
