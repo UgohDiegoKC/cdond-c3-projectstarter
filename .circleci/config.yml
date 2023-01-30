@@ -380,7 +380,7 @@ jobs:
       # Lightweight Docker image
       - image: cimg/base:stable
     steps:
-      # Checkout code from git
+      # Checkout code from git.
       - checkout
 
       - install_nodejs
