@@ -185,12 +185,9 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
-      # install tar and gzip
       - run: yum install tar gzip -y
       - run:
           name: Ensure back-end infrastructure exists
@@ -222,15 +219,13 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+            - project/.circleci/ansible/inventory.txt    
       - destroy-environment
 
   configure-infrastructure:
     docker:
       - image: cimg/base:stable
     steps:
-      # Checkout code from git
       - checkout
       - add_ssh_keys:
           fingerprints:
@@ -247,16 +242,13 @@ jobs:
             cd .circleci/ansible
             cat inventory.txt
 
-            ansible-playbook -i inventory.txt configure-server.yml
-      # Here's where you will add some code to rollback on failure      
+            ansible-playbook -i inventory.txt configure-server.yml    
       - destroy-environment
 
   run-migrations:
     docker:
-      # Docker image here that supports NodeJS
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
 
       - install_awscli
@@ -279,46 +271,9 @@ jobs:
       - revert-migrations
 
   deploy-frontend:
-    # docker:
-    #   - image: cimg/base:stable
-    # steps:
-    #   - checkout
-    #   - install_awscli
-    #   - install_nodejs
-    #   - install_ansible
-    #   - add_ssh_keys:
-    #       fingerprints:
-    #         - "24:dc:3a:e0:98:a6:b5:d2:76:bb:36:22:ef:54:83:1b"
-    #   - run:
-    #       name: Install dependencies
-    #       command: |
-    #         cd frontend
-    #         npm install
-    #   - run:
-    #       name: Get backend url
-    #       command: |
-    #         export BACKEND_IP=$(aws ec2 describe-instances \
-    #         --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-    #         --query 'Reservations[*].Instances[*].PublicIpAddress' \
-    #         --output text)
-    #         export API_URL="http://${BACKEND_IP}:3030"
-    #         echo "API_URL = $(API_URL)"
-    #         echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
-    #         cat frontend/.env
-    #   - run:
-    #       name: Deploy frontend objects
-    #       command: |
-    #         cd frontend
-    #         npm install
-    #         npm run build
-    #         tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-    #         aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-    #   - destroy-environment
-    #   - revert-migrations
     docker:
       - image: python:3.10-alpine3.16
     steps:
-      # Checkout code from git
       - checkout
 
       - attach_workspace:
@@ -353,85 +308,59 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      # Here's where you will add some code to rollback on failure
       - destroy-environment
       - revert-migrations
   
   deploy-backend:
-    docker:
-        - image: cimg/base:stable
-    steps:
+      docker:
+        - image: python:3.10-alpine3.16
+      steps:
       - checkout
-      - install_awscli
-      - install_nodejs
-      - install_ansible
+      
       - add_ssh_keys:
           fingerprints:
             - "24:dc:3a:e0:98:a6:b5:d2:76:bb:36:22:ef:54:83:1b"
       - attach_workspace:
           at: ~/
+
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache ansible
+            apk add --update --no-cache tar
+            apk add --update --no-cache gzip
+            apk add --update --no-cache nodejs
+            apk add --update --no-cache npm
+            apk add --update --no-cache aws-cli
+            apk add --update --no-cache curl
+
       - run:
           name: Deploy backend
           command: |
             cd backend
+
             npm i
             npm run build
+
             cd ..
             tar -C backend -czvf artifact.tar.gz .
+
             mkdir -p ~/project/.circleci/ansible/roles/deploy/files
             mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+          
             cd .circleci/ansible
+
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
-      - revert-migrations
-      # docker:
-      #   - image: python:3.10-alpine3.16
-      # steps:
-      #   # Checkout code from git
-    #   - checkout
-      
-    #   - add_ssh_keys:
-    #       fingerprints:
-    #         - "24:dc:3a:e0:98:a6:b5:d2:76:bb:36:22:ef:54:83:1b"
-    #   - attach_workspace:
-    #       at: ~/
-
-    #   - run:
-    #       name: Install dependencies
-    #       command: |
-    #         apk add --update --no-cache ansible tar gzip nodejs npm curl aws-cli
-
-    #   - run:
-    #       name: Deploy backend
-    #       command: |
-    #         cd backend
-
-    #         npm i
-    #         npm run build
-
-    #         cd ..
-    #         tar -C backend -czvf artifact.tar.gz .
-
-    #         mkdir -p ~/project/.circleci/ansible/roles/deploy/files
-    #         mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
-          
-    #         cd .circleci/ansible
-
-    #         echo "Contents  of the inventory.txt file is -------"
-    #         cat inventory.txt
-    #         ansible-playbook -i inventory.txt deploy-backend.yml
-    #   # Here's where you will add some code to rollback on failure 
-    #   - destroy-environment
-    #   - revert-migrations 
+      - revert-migrations 
 
   smoke-test:
     docker:
       # Lightweight Docker image
       - image: cimg/base:stable
     steps:
-      # Checkout code from git
       - checkout
 
       - install_nodejs
@@ -473,7 +402,6 @@ jobs:
             else
                 exit 1
             fi
-      # Here's where you will add some code to rollback on failure
       - destroy-environment
       - revert-migrations
 
