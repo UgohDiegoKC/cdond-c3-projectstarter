@@ -272,22 +272,29 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: python:3.10-alpine3.16
+#        - image: python:3.10-alpine3.16
+        - image: cimg/base:stable
     steps:
       - checkout
-
+      - install_awscli
+      - install_nodejs
+      - install_ansible
+      - add_ssh_keys:
+          fingerprints:
+            - "24:dc:3a:e0:98:a6:b5:d2:76:bb:36:22:ef:54:83:1b"
       - attach_workspace:
           at: ~/
 
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache tar
-            apk add --update --no-cache gzip
-            apk add --update --no-cache nodejs
-            apk add --update --no-cache npm
-            apk add --update --no-cache aws-cli
-            apk add --update --no-cache curl
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       apk add --update --no-cache ansible
+      #       apk add --update --no-cache tar
+      #       apk add --update --no-cache gzip
+      #       apk add --update --no-cache nodejs
+      #       apk add --update --no-cache npm
+      #       apk add --update --no-cache aws-cli
+      #       apk add --update --no-cache curl
 
       - run:
           name: Get backend url
@@ -312,27 +319,30 @@ jobs:
       - revert-migrations
   
   deploy-backend:
-      docker:
-        - image: python:3.10-alpine3.16
-      steps:
+    docker:
+#        - image: python:3.10-alpine3.16
+        - image: cimg/base:stable
+    steps:
       - checkout
-      
+      - install_awscli
+      - install_nodejs
+      - install_ansible
       - add_ssh_keys:
           fingerprints:
             - "24:dc:3a:e0:98:a6:b5:d2:76:bb:36:22:ef:54:83:1b"
       - attach_workspace:
           at: ~/
 
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache ansible
-            apk add --update --no-cache tar
-            apk add --update --no-cache gzip
-            apk add --update --no-cache nodejs
-            apk add --update --no-cache npm
-            apk add --update --no-cache aws-cli
-            apk add --update --no-cache curl
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       apk add --update --no-cache ansible
+      #       apk add --update --no-cache tar
+      #       apk add --update --no-cache gzip
+      #       apk add --update --no-cache nodejs
+      #       apk add --update --no-cache npm
+      #       apk add --update --no-cache aws-cli
+      #       apk add --update --no-cache curl
 
       - run:
           name: Deploy backend
@@ -343,12 +353,18 @@ jobs:
             npm run build
 
             cd ..
-            tar -C backend -czvf artifact.tar.gz .
 
-            mkdir -p ~/project/.circleci/ansible/roles/deploy/files
-            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
-          
             cd .circleci/ansible
+            mkdir files
+            cd files
+            tar -C ../../../backend -czvf artifact.tar.gz .
+            cd ../
+#            tar -C backend -czvf artifact.tar.gz .
+#
+#            mkdir -p ~/project/.circleci/ansible/roles/deploy/files
+#            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+          
+#            cd .circleci/ansible
 
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
@@ -382,7 +398,7 @@ jobs:
             echo "Sleeping for 1 minute"
             sleep 60
 
-            if curl -s "${API_URL}/api/status" | grep "ok"
+            if curl -s ${API_URL}/api/status | grep "ok"
             then
                 exit 0
             else
